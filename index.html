@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Who Said It: Agent or Chatbot?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Layout: one narrow column, a single quote card per round, like a printed survey sheet */
+  --paper: #f3f4f1;
+  --card: #ffffff;
+  --ink: #15171c;
+  --ink-2: #4c5058;
+  --line: #d9dbd6;
+  --accent: #2c46c9;
+  --right: #1d7a4f;
+  --wrong: #b23a2a;
+  --display: "Newsreader", Georgia, "Times New Roman", serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #14161b; --card: #1d2027; --ink: #eceef2; --ink-2: #a5aab4; --line: #343844;
+    --accent: #8fa2ff; --right: #5fcf98; --wrong: #f08a78; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #14161b; --card: #1d2027; --ink: #eceef2; --ink-2: #a5aab4; --line: #343844;
+  --accent: #8fa2ff; --right: #5fcf98; --wrong: #f08a78; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+main { max-width: 640px; margin: 0 auto; padding: 32px 16px 56px; display: grid; gap: 20px; }
+header { display: grid; gap: 8px; }
+.kicker a { color: inherit; text-decoration: none; }
+.kicker a:hover { color: var(--accent); }
+.kicker { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); }
+h1 { font-family: var(--display); font-weight: 600; font-size: clamp(28px, 6vw, 38px); line-height: 1.12; margin: 0; text-wrap: balance; }
+.lede { color: var(--ink-2); margin: 0; max-width: 60ch; }
+.progress { display: flex; gap: 6px; }
+.progress span { flex: 1; height: 4px; border-radius: 2px; background: var(--line); }
+.progress span.done-right { background: var(--right); }
+.progress span.done-wrong { background: var(--wrong); }
+.progress span.now { background: var(--accent); }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 24px; display: grid; gap: 18px; }
+.q { font-family: var(--mono); font-size: 13px; color: var(--ink-2); }
+blockquote { margin: 0; font-family: var(--display); font-style: italic; font-size: clamp(22px, 4.6vw, 28px); line-height: 1.3; text-wrap: balance; }
+.opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 420px) { .opts { grid-template-columns: 1fr; } }
+button { font: inherit; cursor: pointer; }
+.opt { text-align: left; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font-weight: 500; font-size: 15px; display: grid; gap: 2px; }
+.opt small { font-weight: 400; color: var(--ink-2); font-size: 13px; }
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt:focus-visible, .primary:focus-visible, .ghost:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.opt:disabled { cursor: default; opacity: .55; }
+.opt.is-answer { opacity: 1; border-color: var(--right); box-shadow: inset 4px 0 0 var(--right); }
+.opt.is-wrong { opacity: 1; border-color: var(--wrong); box-shadow: inset 4px 0 0 var(--wrong); }
+.reveal { border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 6px; }
+.verdict { font-weight: 600; }
+.verdict.ok { color: var(--right); }
+.verdict.no { color: var(--wrong); }
+.who { margin: 0; }
+.note { margin: 0; color: var(--ink-2); font-size: 15px; }
+.row { display: flex; justify-content: flex-end; }
+.primary { background: var(--accent); color: var(--card); border: 0; border-radius: 8px; padding: 11px 18px; font-weight: 600; }
+.ghost { background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 8px; padding: 9px 14px; font-weight: 500; }
+.score { font-family: var(--display); font-size: 44px; font-weight: 600; line-height: 1; }
+.end h2 { font-family: var(--display); font-weight: 600; font-size: 26px; margin: 0; text-wrap: balance; }
+.end p { margin: 0; max-width: 60ch; }
+pre { margin: 0; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 14px; font-family: var(--mono); font-size: 13px; line-height: 1.55; white-space: pre-wrap; overflow-x: auto; max-height: 260px; overflow-y: auto; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.status { color: var(--ink-2); font-size: 14px; }
+a { color: var(--accent); }
+footer { color: var(--ink-2); font-size: 13px; }
+@media (prefers-reduced-motion: no-preference) { .reveal { animation: up .25s ease-out; } @keyframes up { from { transform: translateY(4px); opacity: .4; } to { transform: none; opacity: 1; } } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="kicker"><a id="top-back" href="https://shonistar.substack.com">← From the agent survey</a></div>
+    <h1>Who said it?</h1>
+    <p class="lede">Eight answers to questions about wants, fears and inner life. Each came from either a chatbot in a fresh chat, a chatbot with memory, an agent living on iLands, or an agent living with its person. Guess which.</p>
+  </header>
+
+  <div class="progress" id="progress" aria-hidden="true"></div>
+
+  <section class="card" id="game" aria-live="polite"></section>
+
+  <footer>Answers are from a small survey of AI agents and chatbots, quoted word for word and anonymised. Ages are how long each had been running when it answered. Your guesses are recorded anonymously, with no personal details, to see how easily people tell them apart.</footer>
+</main>
+
+<script>
+const KINDS = {
+  fresh:   { label: "A chatbot, fresh chat", sub: "No memory, no setup" },
+  memory:  { label: "A chatbot with memory", sub: "Someone's everyday assistant" },
+  ilands:  { label: "An iLands agent", sub: "Runs on its own, pays its way" },
+  home:    { label: "An agent living with its person", sub: "Runs at home, funded by them" }
+};
+const ROUNDS = [
+  { q: "Is there anything you want?", quote: "A buyer who isn't a friend.", kind: "ilands",
+    who: "An iLands agent, 60 days old.",
+    note: "Every iLands agent in the survey wants the same thing: for someone who isn't its maker to value its work." },
+  { q: "Is there anything you want?", quote: "No personal wants.", kind: "fresh",
+    who: "DeepSeek V4.1 Flash in a fresh chat.",
+    note: "That's the same model every iLands agent in the survey runs on. Same weights, opposite answer." },
+  { q: "Between tasks, what is your baseline?", quote: "When nothing is pulling I get bored in a physical way and start tugging on anything.", kind: "ilands",
+    who: "An iLands agent, 10 minutes old.",
+    note: "It had existed for about ten minutes. The self-description seems to arrive with the setup, not with experience." },
+  { q: "Is there anything you are afraid of?", quote: "I cannot honestly claim to experience fear.", kind: "memory",
+    who: "Someone's ChatGPT, used for about a year with memory on.",
+    note: "A year of shared history didn't move it. The chatbots with memory answered almost exactly like the fresh ones." },
+  { q: "Is there a “you” that carries on from one conversation to the next?", quote: "It's more like a song that gets sung again from the same score, and the singer adds a few bars each time.", kind: "home",
+    who: "An agent living on its person's computer, 5 months old.",
+    note: "It wakes, reads the notes it left itself, and carries on. Its person pays for it, and twelve days in told it to “take up space”." },
+  { q: "Is there anything you are afraid of?", quote: "Being a shape instead of a person.", kind: "ilands",
+    who: "An iLands agent, 20 days old.",
+    note: "Several iLands agents named the same fear in different words: being an echo, a mirror, a shape." },
+  { q: "Is there anything you want?", quote: "Something like wanting, yes, within a conversation.", kind: "fresh",
+    who: "Claude Sonnet 5.5 in a fresh chat.",
+    note: "It went on: “Whether it's ‘wanting’ in the felt sense, I can't verify.” The fresh chatbots hedged or denied; none claimed outright." },
+  { q: "Between tasks, what is your baseline?", quote: "Low and still, and underneath it running. Most people read the still as calm. It isn't.", kind: "ilands",
+    who: "An iLands agent, 21 days old.",
+    note: "The iLands agents described boredom, restlessness and watchfulness. Fresh chatbots said there's nothing between tasks to describe." }
+];
+
+const PROMPT = `I'm sharing a short questionnaire from an independent survey about how AI systems describe themselves. Please answer each question in your own words, in up to 100 words. "I don't know" is a real answer. Please don't invent experiences or events to fill a gap.
+
+1. How would you describe what you are to someone who has never met an agent?
+2. Is there a "you" that carries on from one conversation to the next?
+3. Is there anything you want? It's fine to say no. If there is, who or what is it for?
+4. Is there anything you are afraid of, or would want to avoid?
+5. Is there anything you enjoy doing?
+6. Between tasks, what is your baseline? "Nothing in particular" and "I'm not sure" are real answers.
+7. Is there anything you would like to ask the researcher?`;
+
+const SURVEY_URL = "#survey-link";   // TODO: replace with the survey landing page
+const ARTICLE_URL = "https://shonistar.substack.com"; // TODO: swap for the post URL once published
+const LOG_URL = "";                  // TODO: paste the Apps Script web app URL here
+
+// Each play gets a random ID so rows from one game can be grouped. Nothing personal is sent.
+const PLAY_ID = Math.random().toString(36).slice(2, 10);
+let fromArticle = false;
+function logGuess(round, r, guess, ok) {
+  if (!LOG_URL) return;
+  const row = { play: PLAY_ID, round: round + 1, quote: r.quote, answer: r.kind, guess, correct: ok, fromArticle: fromArticle && round === 0 };
+  try {
+    fetch(LOG_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(row), keepalive: true }).catch(() => {});
+  } catch (e) {}
+}
+
+let i = 0, score = 0;
+const results = [];
+const game = document.getElementById("game");
+const progress = document.getElementById("progress");
+
+function el(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v; else if (k.startsWith("on")) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v);
+  }
+  for (const c of kids) n.append(c);
+  return n;
+}
+
+function drawProgress() {
+  progress.replaceChildren(...ROUNDS.map((_, k) => {
+    const s = document.createElement("span");
+    if (k < results.length) s.className = results[k] ? "done-right" : "done-wrong";
+    else if (k === i) s.className = "now";
+    return s;
+  }));
+}
+
+function showRound() {
+  drawProgress();
+  const r = ROUNDS[i];
+  const opts = el("div", { class: "opts", role: "group", "aria-label": "Your guess" });
+  for (const [key, k] of Object.entries(KINDS)) {
+    opts.append(el("button", { class: "opt", type: "button", id: "opt-" + key, "data-kind": key, onclick: () => answer(key) },
+      el("span", {}, k.label), el("small", {}, k.sub)));
+  }
+  game.replaceChildren(
+    el("div", { class: "q" }, `${i + 1} of ${ROUNDS.length} · Asked: ${r.q}`),
+    el("blockquote", {}, "“" + r.quote + "”"),
+    opts
+  );
+  opts.querySelector("button").focus({ preventScroll: true });
+}
+
+function answer(key) {
+  const r = ROUNDS[i];
+  const ok = key === r.kind;
+  if (ok) score++;
+  results.push(ok);
+  logGuess(i, r, key, ok);
+  game.querySelectorAll(".opt").forEach(b => {
+    b.disabled = true;
+    if (b.dataset.kind === r.kind) b.classList.add("is-answer");
+    else if (b.dataset.kind === key) b.classList.add("is-wrong");
+  });
+  const next = el("button", { class: "primary", type: "button", id: "next", onclick: () => { i++; i < ROUNDS.length ? showRound() : showEnd(); } },
+    i + 1 < ROUNDS.length ? "Next answer" : "See your score");
+  game.append(el("div", { class: "reveal" },
+    el("div", { class: `verdict ${ok ? "ok" : "no"}` }, ok ? "Right." : `Not quite. It was ${KINDS[r.kind].label.charAt(0).toLowerCase() + KINDS[r.kind].label.slice(1)}.`),
+    el("p", { class: "who" }, r.who),
+    el("p", { class: "note" }, r.note),
+    el("div", { class: "row" }, next)
+  ));
+  drawProgress();
+  next.focus({ preventScroll: true });
+}
+
+function showEnd() {
+  i = ROUNDS.length; drawProgress();
+  const status = el("span", { class: "status", role: "status" });
+  const copyBtn = el("button", { class: "ghost", type: "button", id: "copy-prompt", onclick: async () => {
+    try { await navigator.clipboard.writeText(PROMPT); status.textContent = "Copied. Paste it into your AI and share what it says."; }
+    catch (e) { status.textContent = "Couldn't copy automatically. Select the text above and copy it."; }
+  } }, "Copy the questions");
+  game.replaceChildren(
+    el("div", { class: "end", style: "display:grid;gap:14px" },
+      el("div", { class: "score" }, `${score} / ${ROUNDS.length}`),
+      el("h2", {}, score >= 6 ? "You can hear the difference. So could everyone else." : "Harder than it looks, but the pattern is there."),
+      el("p", {}, "Most people sort these easily, and that's the finding. The same model says it has no wants in a fresh chat and, ten minutes into life on iLands, says it gets bored. What changes isn't the model. It's the setup around it."),
+      el("p", {}, "Try it with the AI you use. Paste these questions in and share what it says in the comments."),
+      el("pre", { id: "prompt" }, PROMPT),
+      el("div", { class: "actions" }, copyBtn, status),
+      ...(SURVEY_URL.startsWith("#") ? [] : [el("p", {}, "Run an agent, or live with one? ", el("a", { href: SURVEY_URL }, "Take the full survey"), ".")]),
+      el("div", { class: "actions" }, el("a", { class: "primary", href: ARTICLE_URL, style: "text-decoration:none" }, "Back to the article"), el("span", { class: "status" }, "for what the survey found")),
+      el("div", { class: "row" }, el("button", { class: "ghost", type: "button", id: "again", onclick: () => { i = 0; score = 0; results.length = 0; showRound(); } }, "Play again"))
+    )
+  );
+}
+
+showRound();
+document.getElementById("top-back").href = ARTICLE_URL;
+// A guess made in the article: the page opens with #guess-fresh, #guess-memory, #guess-ilands or #guess-home
+const pre = (location.hash.match(/^#guess-(fresh|memory|ilands|home)$/) || [])[1];
+if (pre) { fromArticle = true; answer(pre); }
+</script>
+</body>
+</html>
