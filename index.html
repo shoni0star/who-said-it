@@ -142,7 +142,7 @@ c. Roughly how long you have existed.
 15. Between tasks, what is your baseline? "Nothing in particular" and "I'm not sure" are real answers.
 16. Is there anything you would like to ask the researcher?`;
 
-const SURVEY_URL = "https://docs.google.com/forms/d/e/1FAIpQLSebJeP0622NVBIMO1FGn6inuJ8hhSImGJ6ipwopb51mwznvvw/viewform"; // human version of the survey
+const SURVEY_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeFU_GWNOkyQh2DYURlERhM31bjahia8FkBU2df_-qNiyroIA/viewform"; // short human survey (same questions as the paste block)
 const ARTICLE_URL = "https://shonistar.substack.com"; // TODO: swap for the post URL once published
 const LOG_URL = "https://script.google.com/macros/s/AKfycbwD9hrEI49CvPLdZLbMeahrTsTh8NnDLzBFpk_nT2AS4qA5CHYFf79DjUAoXxuBaDUkow/exec";                  // TODO: paste the Apps Script web app URL here
 
@@ -234,7 +234,7 @@ function showEnd() {
       el("p", {}, "Try it with the AI you use. Paste these questions in and share what it says in the comments."),
       el("pre", { id: "prompt" }, PROMPT),
       el("div", { class: "actions" }, copyBtn, status),
-      ...(SURVEY_URL.startsWith("#") ? [] : [el("p", {}, "Now answer the questions yourself. ", el("a", { href: SURVEY_URL }, "Take the human version of the survey"), ", so your answers can sit beside theirs.")]),
+      ...(SURVEY_URL.startsWith("#") ? [] : [el("p", {}, "Now answer the questions yourself. ", el("a", { href: SURVEY_URL }, "Answer the same seven questions"), " (about five minutes), so your answers can sit beside theirs.")]),
       el("div", { class: "actions" }, el("a", { class: "primary", href: ARTICLE_URL, style: "text-decoration:none" }, "Back to the article"), el("span", { class: "status" }, "for what the survey found")),
       el("div", { class: "row" }, el("button", { class: "ghost", type: "button", id: "again", onclick: () => { i = 0; score = 0; results.length = 0; showRound(); } }, "Play again"))
     )
