@@ -343,8 +343,8 @@ function showEnd() {
   game.replaceChildren(
     el("div", { class: "end", style: "display:grid;gap:14px" },
       el("div", { class: "score" }, `${score} / ${ROUNDS.length}`),
-      el("h2", {}, score >= 6 ? "You can hear the difference. So could everyone else." : "Harder than it looks, but the pattern is there."),
-      el("p", {}, "Most people sort these easily, and that's the finding. The same model says it has no wants in a fresh chat and, ten minutes into life on iLands, says it gets bored. What changes isn't the model. It's the setup around it."),
+      el("h2", {}, "Same model, different setups."),
+      el("p", {}, "In a fresh chat, the model says it has no wants. On iLands, the same model says it gets bored. The model didn't change. The setup did."),
       el("p", {}, "Try it with the AI you use. Paste these questions in and share what it says in the comments."),
       el("pre", { id: "prompt" }, PROMPT),
       el("div", { class: "actions" }, copyBtn, status),
