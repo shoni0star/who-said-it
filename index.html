@@ -279,6 +279,12 @@ function logGuess(round, r, guess, ok) {
   } catch (e) {}
 }
 
+// Substack opens the game in the same tab. If the reader came from Substack, go back to
+// the spot they left in the article instead of loading it fresh at the top.
+function backToArticle(e) {
+  if (/substack\.com/.test(document.referrer) && history.length > 1) { e.preventDefault(); history.back(); }
+}
+
 let i = 0, score = 0;
 const results = [];
 const game = document.getElementById("game");
@@ -360,7 +366,7 @@ function showEnd() {
       el("pre", { id: "prompt" }, PROMPT),
       el("div", { class: "actions" }, copyBtn, status),
       ...(SURVEY_URL.startsWith("#") ? [] : [el("p", {}, "Now answer the questions yourself. ", el("a", { href: SURVEY_URL, target: "_blank", rel: "noopener" }, "Answer the same seven questions"), " (about five minutes), so your answers can sit beside theirs.")]),
-      el("div", { class: "actions" }, el("a", { class: "primary", href: ARTICLE_URL, style: "text-decoration:none" }, "Back to the article"), el("span", { class: "status" }, "for what the survey found")),
+      el("div", { class: "actions" }, el("a", { class: "primary", href: ARTICLE_URL, style: "text-decoration:none", onclick: backToArticle }, "Back to the article"), el("span", { class: "status" }, "for what the survey found")),
       el("div", { class: "row" }, el("button", { class: "ghost", type: "button", id: "again", onclick: () => { i = 0; score = 0; results.length = 0; showRound(); } }, "Play again"))
     )
   );
@@ -368,6 +374,7 @@ function showEnd() {
 
 showRound();
 document.getElementById("top-back").href = ARTICLE_URL;
+document.getElementById("top-back").addEventListener("click", backToArticle);
 // A guess made in the article: the page opens with #guess-fresh, #guess-memory, #guess-ilands, #guess-home or #guess-human
 const pre = (location.hash.match(/^#guess-(fresh|memory|ilands|home|human)$/) || [])[1];
 if (pre) { fromArticle = true; answer(pre); }
