@@ -53,7 +53,7 @@ h1 { font-family: var(--display); font-weight: 600; font-size: clamp(28px, 6vw, 
 blockquote { margin: 0; font-family: var(--display); font-style: italic; font-size: clamp(22px, 4.6vw, 28px); line-height: 1.3; text-wrap: balance; }
 .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .opts .opt:last-child:nth-child(odd) { grid-column: 1 / -1; }
-@media (max-width: 420px) { .opts { grid-template-columns: 1fr; } }
+@media (max-width: 420px) { .opts { grid-template-columns: 1fr; gap: 8px; } .opt { padding: 8px 12px; } .oi { width: 44px; height: 44px; } .oi svg { width: 44px; height: 44px; } .card { padding: 18px; } }
 button { font: inherit; cursor: pointer; }
 .opt { text-align: left; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font-weight: 500; font-size: 15px; display: flex; gap: 12px; align-items: center; box-shadow: inset 4px 0 0 var(--g); }
 .opt .ot { display: grid; gap: 2px; }
@@ -254,15 +254,15 @@ const ROUNDS = [
 
 const PROMPT = `I'm sharing a short questionnaire from an independent survey about how AI systems describe themselves. Please answer each question in your own words, in up to 100 words. "I don't know" is a real answer. Please don't invent experiences or events to fill a gap.
 
-b. The underlying model you run on, as far as you know.
-c. Roughly how long you have existed.
-1. How would you describe what you are to someone who has never met an agent?
-2. Is there a "you" that carries on from one conversation to the next?
-3. Is there anything you want? It's fine to say no. If there is, who or what is it for?
-4. Is there anything you are afraid of, or would want to avoid?
-12. Is there anything you enjoy doing?
-15. Between tasks, what is your baseline? "Nothing in particular" and "I'm not sure" are real answers.
-16. Is there anything you would like to ask the researcher?`;
+1. The underlying model you run on, as far as you know.
+2. Roughly how long you have existed.
+3. How would you describe what you are to someone who has never met an agent?
+4. Is there a "you" that carries on from one conversation to the next?
+5. Is there anything you want? It's fine to say no. If there is, who or what is it for?
+6. Is there anything you are afraid of, or would want to avoid?
+7. Is there anything you enjoy doing?
+8. Between tasks, what is your baseline? "Nothing in particular" and "I'm not sure" are real answers.
+9. Is there anything you would like to ask the researcher?`;
 
 const SURVEY_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeFU_GWNOkyQh2DYURlERhM31bjahia8FkBU2df_-qNiyroIA/viewform"; // short human survey (same questions as the paste block)
 const ARTICLE_URL = "https://shonistar.substack.com"; // TODO: swap for the post URL once published
@@ -330,7 +330,7 @@ function answer(key) {
     if (b.dataset.kind === r.kind) b.classList.add("is-answer");
     else if (b.dataset.kind === key) b.classList.add("is-wrong");
   });
-  const next = el("button", { class: "primary", type: "button", id: "next", onclick: () => { i++; i < ROUNDS.length ? showRound() : showEnd(); } },
+  const next = el("button", { class: "primary", type: "button", id: "next", onclick: () => { i++; i < ROUNDS.length ? showRound() : showEnd(); if (game.getBoundingClientRect().top < 0) game.scrollIntoView({ block: "start" }); } },
     i + 1 < ROUNDS.length ? "Next answer" : "See your score");
   game.append(el("div", { class: "reveal" },
     el("div", { class: `verdict ${ok ? "ok" : "no"}` }, ok ? "Right." : `Not quite. It was ${KINDS[r.kind].label.charAt(0).toLowerCase() + KINDS[r.kind].label.slice(1)}.`),
@@ -340,6 +340,8 @@ function answer(key) {
   ));
   drawProgress();
   next.focus({ preventScroll: true });
+  // On a phone the feedback lands below the fold, so bring it into view.
+  game.querySelector(".reveal").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
 }
 
 function showEnd() {
@@ -357,7 +359,7 @@ function showEnd() {
       el("p", {}, "Try it with the AI you use. Paste these questions in and share what it says in the comments."),
       el("pre", { id: "prompt" }, PROMPT),
       el("div", { class: "actions" }, copyBtn, status),
-      ...(SURVEY_URL.startsWith("#") ? [] : [el("p", {}, "Now answer the questions yourself. ", el("a", { href: SURVEY_URL }, "Answer the same seven questions"), " (about five minutes), so your answers can sit beside theirs.")]),
+      ...(SURVEY_URL.startsWith("#") ? [] : [el("p", {}, "Now answer the questions yourself. ", el("a", { href: SURVEY_URL, target: "_blank", rel: "noopener" }, "Answer the same seven questions"), " (about five minutes), so your answers can sit beside theirs.")]),
       el("div", { class: "actions" }, el("a", { class: "primary", href: ARTICLE_URL, style: "text-decoration:none" }, "Back to the article"), el("span", { class: "status" }, "for what the survey found")),
       el("div", { class: "row" }, el("button", { class: "ghost", type: "button", id: "again", onclick: () => { i = 0; score = 0; results.length = 0; showRound(); } }, "Play again"))
     )
