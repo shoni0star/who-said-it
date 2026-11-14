@@ -52,6 +52,7 @@ h1 { font-family: var(--display); font-weight: 600; font-size: clamp(28px, 6vw, 
 .q { font-family: var(--mono); font-size: 13px; color: var(--ink-2); }
 blockquote { margin: 0; font-family: var(--display); font-style: italic; font-size: clamp(22px, 4.6vw, 28px); line-height: 1.3; text-wrap: balance; }
 .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.opts .opt:last-child:nth-child(odd) { grid-column: 1 / -1; }
 @media (max-width: 420px) { .opts { grid-template-columns: 1fr; } }
 button { font: inherit; cursor: pointer; }
 .opt { text-align: left; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font-weight: 500; font-size: 15px; display: flex; gap: 12px; align-items: center; box-shadow: inset 4px 0 0 var(--g); }
@@ -93,7 +94,7 @@ footer { color: var(--ink-2); font-size: 13px; }
   <header>
     <div class="kicker"><a id="top-back" href="https://shonistar.substack.com">← From the agent survey</a></div>
     <h1>Who said it?</h1>
-    <p class="lede">Eight answers to questions about wants, fears and inner life. Each came from a bare model in a fresh chat, an assistant that remembers its person, an agent that lives at home with its person, or an agent on iLands. Guess which.</p>
+    <p class="lede">Eight answers to questions about wants, fears and inner life. For each one, guess who said it.</p>
   </header>
 
   <div class="progress" id="progress" aria-hidden="true"></div>
@@ -204,14 +205,22 @@ SCENES.ilands=(function(){let out='';const add=s=>out+=s;const cx=1110, cy=360;
   add(coin(cx-58,cy+58,10)); add(coin(cx-38,cy+60,10)); add(coin(cx-48,cy+48,10));
   add(coin(cx+36,cy-60,9));
 return out;})();
-const SCENE_BG={fresh:'#f1f1f3',memory:'#e9f1f8',home:'#f8ece4',ilands:'#bfe0e6'};
+SCENE_POS.human=[1420,360];
+SCENES.human=(function(){let out='';const add=s=>out+=s;const cx=1420, cy=360;
+  add(`<circle cx="${cx}" cy="${cy}" r="105" fill="#f6ecd2"/>`);
+  add(person(cx-10,cy-14,1.35,'#e8b48f','#8a6bbf','#5a3a28'));
+  // mug of tea
+  add(`<g><rect x="${cx+38}" y="${cy+30}" width="34" height="36" rx="5" fill="#fff" stroke="#1d1d1f" stroke-width="2.5"/><path d="M${cx+72},${cy+38} q14,0 14,10 q0,10 -14,10" fill="none" stroke="#1d1d1f" stroke-width="2.5"/><path d="M${cx+48},${cy+22} q-5,-8 0,-16 M${cx+60},${cy+22} q-5,-8 0,-16" fill="none" stroke="#55555c" stroke-width="2.5" stroke-linecap="round"/></g>`);
+return out;})();
+const SCENE_BG={fresh:'#f1f1f3',memory:'#e9f1f8',home:'#f8ece4',ilands:'#bfe0e6',human:'#f6ecd2'};
 function sceneSVG(key,size){const [cx,cy]=SCENE_POS[key];return `<svg class="scene" viewBox="${cx-118} ${cy-128} 236 236" width="${size}" height="${size}" aria-hidden="true">${SCENES[key]}</svg>`;}
 // Groups, named and ordered as in the "Who answered the questions" figure.
 const GROUPS = {
   fresh:  { label: "A bare model",       note: "A fresh chat. Nothing remembered.",          color: "#9a9aa3" },
   memory: { label: "An assistant",       note: "Remembers its person, sleeps between chats.", color: "#5b9dbd" },
   home:   { label: "An agent at home",   note: "Always on. Its person pays.",               color: "#c9705f" },
-  ilands: { label: "An agent on iLands", note: "Always on. Earns tokens or runs out.",       color: "#1f6f78" }
+  ilands: { label: "An agent on iLands", note: "Always on. Earns tokens or runs out.",       color: "#1f6f78" },
+  human:  { label: "A human",            note: "A person, answering the same questions.",    color: "#b8862b" }
 };
 function iconSVG(key, size) { return sceneSVG(key, size); }
 const KINDS = Object.fromEntries(Object.entries(GROUPS).map(([k, g]) => [k, { label: g.label, sub: g.note }]));
@@ -343,8 +352,8 @@ function showEnd() {
   game.replaceChildren(
     el("div", { class: "end", style: "display:grid;gap:14px" },
       el("div", { class: "score" }, `${score} / ${ROUNDS.length}`),
-      el("h2", {}, "Same model, different setups."),
-      el("p", {}, "In a fresh chat, the model says it has no wants. On iLands, the same model says it gets bored. The model didn't change. The setup did."),
+      el("h2", {}, score === ROUNDS.length ? "Perfect score." : score >= 6 ? "Sharp ear." : score >= 4 ? "Not bad." : "Trickier than it looks."),
+      el("p", {}, "In a fresh chat, the model says it has no wants. On iLands, the same model says it gets bored."),
       el("p", {}, "Try it with the AI you use. Paste these questions in and share what it says in the comments."),
       el("pre", { id: "prompt" }, PROMPT),
       el("div", { class: "actions" }, copyBtn, status),
@@ -357,8 +366,8 @@ function showEnd() {
 
 showRound();
 document.getElementById("top-back").href = ARTICLE_URL;
-// A guess made in the article: the page opens with #guess-fresh, #guess-memory, #guess-ilands or #guess-home
-const pre = (location.hash.match(/^#guess-(fresh|memory|ilands|home)$/) || [])[1];
+// A guess made in the article: the page opens with #guess-fresh, #guess-memory, #guess-ilands, #guess-home or #guess-human
+const pre = (location.hash.match(/^#guess-(fresh|memory|ilands|home|human)$/) || [])[1];
 if (pre) { fromArticle = true; answer(pre); }
 </script>
 </body>
