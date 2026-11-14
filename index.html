@@ -279,10 +279,15 @@ function logGuess(round, r, guess, ok) {
   } catch (e) {}
 }
 
-// Substack opens the game in the same tab. If the reader came from Substack, go back to
-// the spot they left in the article instead of loading it fresh at the top.
+// On the web, Substack opens the game in a new tab and the article tab stays where the reader left it,
+// so closing this tab takes them straight back. If they arrived in the same tab, go back in history.
+// If neither works (some in-app browsers), fall back to opening the article.
 function backToArticle(e) {
-  if (/substack\.com/.test(document.referrer) && history.length > 1) { e.preventDefault(); history.back(); }
+  if (!/substack\.com/.test(document.referrer)) return;
+  e.preventDefault();
+  if (history.length > 1) { history.back(); return; }
+  window.close();
+  setTimeout(() => { location.href = ARTICLE_URL; }, 300);
 }
 
 let i = 0, score = 0;
